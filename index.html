@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+
+<body>
+
+    <div onclick="login()"
+        style="padding:20px;display:inline-block;background-color: black;color:white;margin-left: auto;margin-right: auto;">
+        login
+    </div>
+
+    <script>
+        function popupwindow(url, title, w, h) {
+            var left = (screen.width / 2) - (w / 2);
+            var top = (screen.height / 2) - (h / 2);
+            return window.open(url, title, 'toolbar=no, location=no, directories=no, status=no, menubar=no, scrollbars=no, resizable=no, copyhistory=no, width=' + w + ', height=' + h + ', top=' + top + ', left=' + left);
+        }
+
+        function login() {
+            let url = "https://api.grifpkg.com/rest/1/login"
+            let popup = popupwindow(url, "grifpkg login", 400, 600)
+            popup.addEventListener('message', (data) => {
+                console.log(data)
+            })
+        }
+    </script>
+</body>
+
+</html>
