@@ -209,11 +209,7 @@ class Account {
     listSources() {
         return __awaiter(this, void 0, void 0, function* () {
             let response = yield Grif.request("/billing/source/list/");
-            let list = new Array();
-            response.forEach(element => {
-                list.push(element);
-            });
-            return list;
+            return SourceList.fromObject(response);
         });
     }
     setDefaultSource(sourceId) {
@@ -269,6 +265,25 @@ class Session {
             this.country = session.country;
             return this;
         });
+    }
+}
+class SourceList {
+    constructor(defaultv, sources) {
+        this.default = defaultv;
+        this.sources = sources;
+    }
+    static fromObject(object) {
+        let list = new Array();
+        object.sources.forEach(element => {
+            list.push(element);
+        });
+        return new SourceList(object.default, list);
+    }
+    getDefault() {
+        return this.default;
+    }
+    getAll() {
+        return this.sources;
     }
 }
 class Alert {

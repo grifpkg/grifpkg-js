@@ -17,9 +17,7 @@
 
     <script src="./target/grifpkg.js"></script>
     <script>
-        new Grif().getSession().getAccount().getNotifications().then((sessions) => {
-            console.log(sessions);
-        })
+        let grif = new Grif()
         function login() {
             Grif.login().then((ses) => {
                 console.log(ses)

@@ -70,13 +70,9 @@ class Account {
         return <stripe.BillingDetails>response;
     }
 
-    public async listSources(): Promise<Array<stripe.Source>> {
+    public async listSources(): Promise<SourceList> {
         let response = await Grif.request("/billing/source/list/");
-        let list = new Array<stripe.Source>();
-        response.forEach(element => {
-            list.push(<stripe.Source>element)
-        });
-        return list;
+        return SourceList.fromObject(response);
     }
 
     public async setDefaultSource(sourceId: string): Promise<void> {
