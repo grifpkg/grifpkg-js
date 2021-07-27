@@ -109,7 +109,7 @@ class Grif {
             const response = yield fetch(`https://api.grifpkg.com/rest/1${endpoint}`, options);
             let content = null;
             try {
-                content = response.json();
+                content = JSON.parse(yield response.text()); // done like this in order to support primitive results (bools, non-objects)
             }
             catch (error) {
                 // ignore, failed json
