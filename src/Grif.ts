@@ -9,6 +9,10 @@ class Grif {
         }
     }
 
+    public getSession(): Session {
+        return new Session(null, Grif.session, null, null, null, null, null)
+    }
+
     public static async login(save: boolean = true): Promise<Session> {
         if (window != null) {
 
@@ -72,15 +76,6 @@ class Grif {
         }
     }
 
-    public async getOpenSessions(): Promise<Array<Session>> {
-        let sessions = new Array<Session>();
-        let response = await Grif.request("/session/list/")
-        response.forEach(element => {
-            sessions.push(Session.fromObject(element))
-        });
-        return sessions;
-    }
-
     public async logout(save: boolean = true): Promise<Session> {
         let response = await Grif.request("/session/close/")
         if (save) {
@@ -91,29 +86,37 @@ class Grif {
     }
 
     public static async request(endpoint, data: any = null): Promise<any> {
-        let content: any = await new Promise(function (resolve, reject) {
-            var xhttp = new XMLHttpRequest();
-            xhttp.open(data == null ? 'GET' : 'POST', `https://api.grifpkg.com/rest/1${endpoint}`, false);
-            xhttp.setRequestHeader("Accept", "application/json")
-            xhttp.setRequestHeader("Content-Type", "application/json")
-            if (Grif.session != null) xhttp.setRequestHeader("Authorization", `Bearer ${Grif.session}`)
-            xhttp.onload = function () {
-                try {
-                    resolve(JSON.parse(xhttp.responseText))
-                } catch (error) {
-                    reject(new APIException(`Server replied with error ${String(xhttp.status)}`))
-                }
-            };
-            xhttp.onerror = function () {
-                reject(new APIException(`Server replied with error ${String(xhttp.status)}`))
-            };
-            xhttp.send(data != null ? JSON.stringify(data) : null);
-        });
-        if ('error' in content) {
-            throw new APIException(content.error)
+        let options: any = {
+            method: data == null ? 'GET' : 'POST',
+            mode: 'cors',
+            cache: 'no-cache',
+            credentials: 'include',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json',
+                'Authorization': Grif.session != null ? `Bearer ${Grif.session}` : null,
+            },
+            redirect: 'follow',
+            referrerPolicy: 'no-referrer',
+        }
+        if (data != null) options["body"] = JSON.stringify(data)
+        const response = await fetch(`https://api.grifpkg.com/rest/1${endpoint}`, options)
+        let content = null;
+        try {
+            content = response.json();
+        } catch (error) {
+            // ignore, failed json
+        }
+        if (response.status >= 300 || response.status < 200) {
+            if (content != null && typeof content == 'object' && 'error' in content) {
+                throw new APIException(content.error)
+            } else {
+                throw new APIException(`server replied with ${String(response.status)}`)
+            }
         } else {
             return content;
         }
+
     }
 
     public fromBrowser(): string {

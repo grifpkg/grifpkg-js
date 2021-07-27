@@ -15,9 +15,9 @@
         login
     </div>
 
-    <script src="./compiled/grifpkg.js"></script>
+    <script src="./target/grifpkg.js"></script>
     <script>
-        new Grif().getOpenSessions().then((sessions) => {
+        new Grif().getSession().getAccount().getNotifications().then((sessions) => {
             console.log(sessions);
         })
         function login() {

@@ -3,7 +3,7 @@
         "emitDecoratorMetadata": false,
         "module": "amd",
         "target": "es6",
-        "outFile": "compiled/grifpkg.js",
+        "outFile": "target/grifpkg.js",
         "rootDir": "src"
     }
 }
