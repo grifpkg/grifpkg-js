@@ -9,6 +9,10 @@ class Grif {
         }
     }
 
+    public isAuthenticated(): boolean {
+        return Grif.session != null;
+    }
+
     public getSession(): Session {
         return new Session(null, Grif.session, null, null, null, null, null)
     }
@@ -85,7 +89,7 @@ class Grif {
         return Session.fromObject(response);
     }
 
-    public static async request(endpoint, data: any = null): Promise<any> {
+    public static async request(endpoint, data: any = null, hash: string = null): Promise<any> {
         let options: any = {
             method: data == null ? 'GET' : 'POST',
             mode: 'cors',
@@ -94,7 +98,7 @@ class Grif {
             headers: {
                 'Content-Type': 'application/json',
                 'Accept': 'application/json',
-                'Authorization': Grif.session != null ? `Bearer ${Grif.session}` : null,
+                'Authorization': hash != null ? `Bearer ${hash}` : Grif.session != null ? `Bearer ${Grif.session}` : null,
             },
             redirect: 'follow',
             referrerPolicy: 'no-referrer',
@@ -125,4 +129,9 @@ class Grif {
         return atob(hash);
     }
 
+}
+try {
+    module.exports = Grif;
+} catch (error) {
+    // outside node context, native
 }

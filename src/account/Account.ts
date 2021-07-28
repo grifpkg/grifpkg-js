@@ -10,6 +10,18 @@ class Account {
         this.githubId = githubId;
     }
 
+    public getId(): string {
+        return this.id;
+    }
+
+    public getUsername(): string {
+        return this.username;
+    }
+
+    public getGithubId(): string {
+        return this.githubId;
+    }
+
     public static fromObject(object: any): Account {
         return new Account(object.id, object.username, object.githubId)
     }

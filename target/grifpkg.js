@@ -21,6 +21,9 @@ class Grif {
             Grif.session = this.fromBrowser();
         }
     }
+    isAuthenticated() {
+        return Grif.session != null;
+    }
     getSession() {
         return new Session(null, Grif.session, null, null, null, null, null);
     }
@@ -89,7 +92,7 @@ class Grif {
             return Session.fromObject(response);
         });
     }
-    static request(endpoint, data = null) {
+    static request(endpoint, data = null, hash = null) {
         return __awaiter(this, void 0, void 0, function* () {
             let options = {
                 method: data == null ? 'GET' : 'POST',
@@ -99,7 +102,7 @@ class Grif {
                 headers: {
                     'Content-Type': 'application/json',
                     'Accept': 'application/json',
-                    'Authorization': Grif.session != null ? `Bearer ${Grif.session}` : null,
+                    'Authorization': hash != null ? `Bearer ${hash}` : Grif.session != null ? `Bearer ${Grif.session}` : null,
                 },
                 redirect: 'follow',
                 referrerPolicy: 'no-referrer',
@@ -134,11 +137,26 @@ class Grif {
         return atob(hash);
     }
 }
+try {
+    module.exports = Grif;
+}
+catch (error) {
+    // outside node context, native
+}
 class Account {
     constructor(id, username, githubId) {
         this.id = id;
         this.username = username;
         this.githubId = githubId;
+    }
+    getId() {
+        return this.id;
+    }
+    getUsername() {
+        return this.username;
+    }
+    getGithubId() {
+        return this.githubId;
     }
     static fromObject(object) {
         return new Account(object.id, object.username, object.githubId);
@@ -250,8 +268,32 @@ class Session {
     static fromObject(object) {
         return new Session(object.id, object.hash, object.userAgent, new Date(object.creation * 1000), object.expiry == null ? null : new Date(object.expiry * 1000), object.city, object.country);
     }
+    getId() {
+        return this.id;
+    }
+    getUserAgent() {
+        return this.userAgent;
+    }
+    getCreation() {
+        return this.creation;
+    }
+    getExpiry() {
+        return this.expiry;
+    }
+    getCity() {
+        return this.city;
+    }
+    getCountry() {
+        return this.country;
+    }
     getAccount() {
         return new Account(null, null, null);
+    }
+    close() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let response = yield Grif.request("/session/close/", null, this.hash);
+            return Session.fromObject(response);
+        });
     }
     update() {
         return __awaiter(this, void 0, void 0, function* () {
@@ -295,6 +337,27 @@ class Alert {
         this.subject = subject;
         this.text = text;
         this.commercial = commercial;
+    }
+    getId() {
+        return this.id;
+    }
+    getCreation() {
+        return this.creation;
+    }
+    getSeen() {
+        return this.seen;
+    }
+    getAction() {
+        return this.action;
+    }
+    getSubject() {
+        return this.subject;
+    }
+    getText() {
+        return this.text;
+    }
+    isCommercial() {
+        return this.commercial;
     }
     static fromObject(object) {
         return new Alert(object.id, new Date(object.creation * 1000), object.seen == null ? null : new Date(object.seen * 1000), object.action, object.subject, object.text, object.commercial);

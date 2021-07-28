@@ -1,0 +1,25 @@
+{
+  "name": "@grifpkg/client",
+  "version": "1.4.1",
+  "description": "",
+  "main": "./target/grifpkg.min.js",
+  "scripts": {
+    "build": "tsc && terser --compress --mangle --output ./target/grifpkg.min.js -- ./target/grifpkg.js "
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/grifpkg/grifpkg-js.git"
+  },
+  "author": "quiquelhappy",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/grifpkg/grifpkg-js/issues"
+  },
+  "homepage": "https://github.com/grifpkg/grifpkg-js#readme",
+  "dependencies": {
+    "@types/stripe-v3": "^3.1.25"
+  },
+  "devDependencies": {
+    "@types/node": "^16.4.3"
+  }
+}
