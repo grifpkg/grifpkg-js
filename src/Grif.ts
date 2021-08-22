@@ -1,3 +1,5 @@
+/// <reference path="./element/Resource.ts" />
+/// <reference path="./element/Release.ts" />
 class Grif {
 
     private static session: string | null;
@@ -15,6 +17,20 @@ class Grif {
 
     public getSession(): Session {
         return new Session(null, Grif.session, null, null, null, null, null)
+    }
+
+    public async queryResource(name: string, authorName: string = null, service: Service | number = null): Promise<Resource[]> {
+        if (service != null) service = <Service>service;
+        let response = await Grif.request("/resource/query/", {
+            name: name,
+            author: authorName,
+            service: Number(service)
+        });
+        let result: Resource[] = []
+        response.forEach(element => {
+            result.push(Resource.fromObject(element));
+        });
+        return result;
     }
 
     public static async login(save: boolean = true): Promise<Session> {
@@ -131,7 +147,11 @@ class Grif {
 
 }
 try {
-    module.exports = Grif;
+    module.exports = {
+        default: Grif,
+        Resource: Resource,
+        Release: Release
+    };
 } catch (error) {
     // outside node context, native
 }
