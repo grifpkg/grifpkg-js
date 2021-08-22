@@ -21,30 +21,51 @@ class Session {
         return new Session(object.id, object.hash, object.userAgent, new Date(object.creation * 1000), object.expiry == null ? null : new Date(object.expiry * 1000), object.city, object.country)
     }
 
+    /**
+     * @deprecated
+     */
     public getId(): string {
         return this.id;
     }
 
+    /**
+     * @deprecated
+     */
     public getUserAgent(): string {
         return this.userAgent;
     }
 
+    /**
+     * @deprecated
+     */
     public getCreation(): Date {
         return this.creation;
     }
 
+    /**
+     * @deprecated
+     */
     public getExpiry(): Date {
         return this.expiry;
     }
 
+    /**
+     * @deprecated
+     */
     public getCity(): string | null {
         return this.city;
     }
 
+    /**
+     * @deprecated
+     */
     public getCountry(): string | null {
         return this.country;
     }
 
+    /**
+     * @deprecated
+     */
     public getAccount(): Account {
         return new Account(null, null, null)
     }

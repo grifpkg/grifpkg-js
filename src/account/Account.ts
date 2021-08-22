@@ -10,14 +10,23 @@ class Account {
         this.githubId = githubId;
     }
 
+    /**
+     * @deprecated
+     */
     public getId(): string {
         return this.id;
     }
 
+    /**
+     * @deprecated
+     */
     public getUsername(): string {
         return this.username;
     }
 
+    /**
+     * @deprecated
+     */
     public getGithubId(): string {
         return this.githubId;
     }

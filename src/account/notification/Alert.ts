@@ -18,34 +18,58 @@ class Alert {
         this.commercial = commercial
     }
 
+    /**
+     * @deprecated
+     */
     public getId(): string {
         return this.id;
     }
 
+    /**
+     * @deprecated
+     */
     public getCreation(): Date {
         return this.creation;
     }
 
+    /**
+     * @deprecated
+     */
     public getSeen(): Date | null {
         return this.seen;
     }
 
+    /**
+     * @deprecated
+     */
     public getAction(): string {
         return this.action;
     }
 
+    /**
+     * @deprecated
+     */
     public getSubject(): string {
         return this.subject;
     }
 
+    /**
+     * @deprecated
+     */
     public getText(): string {
         return this.text;
     }
 
+    /**
+     * @deprecated
+     */
     public isCommercial(): boolean {
         return this.commercial;
     }
 
+    /**
+     * @deprecated
+     */
     public static fromObject(object: any) {
         return new Alert(object.id, new Date(object.creation * 1000), object.seen == null ? null : new Date(object.seen * 1000), object.action, object.subject, object.text, object.commercial)
     }
