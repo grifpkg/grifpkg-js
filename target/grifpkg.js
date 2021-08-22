@@ -14,6 +14,129 @@ class APIException extends Error {
         Object.setPrototypeOf(this, APIException.prototype);
     }
 }
+class Suggestable {
+    suggest(urlSchema, jsonURL, jsonPath) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let postData = {
+                urlSchema: urlSchema
+            };
+            if (jsonURL != null && jsonPath != null) {
+                postData["jsonURL"] = jsonURL;
+                postData["jsonPath"] = jsonPath;
+            }
+            if (this instanceof Release) {
+                postData["release"] = this.id;
+            }
+            else if (this instanceof Resource) {
+                postData["resource"] = this.id;
+            }
+            else {
+                throw new Error("unsupported suggestable class");
+            }
+            let result = yield Grif.request("/resource/suggest/url/", postData);
+            if (Array.isArray(result)) {
+                let testList = [];
+                result.forEach(element => {
+                    testList.push(UrlSuggestionTestResult.fromObject(element));
+                });
+                return testList;
+            }
+            else {
+                return UrlSuggestionTestResult.fromObject(result);
+            }
+        });
+    }
+}
+/// <reference path="./../suggestion/Suggestable.ts" />
+class Resource extends Suggestable {
+    constructor(id, service, resourceId, paid, name, author, downloads, ratings, rating, description) {
+        super();
+        this.id = id;
+        this.service = service;
+        this.resourceId = resourceId;
+        this.paid = paid;
+        this.name = name;
+        this.author = author;
+        this.downloads = downloads;
+        this.ratings = ratings;
+        this.rating = rating;
+        this.description = description;
+    }
+    static fromId(id) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let response = yield Grif.request("/resource/get/", {
+                resource: id,
+            });
+            return Resource.fromObject(response);
+        });
+    }
+    getReleases() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let response = yield Grif.request("/resource/release/list/", {
+                resource: this.id,
+            });
+            let result = [];
+            response.forEach(element => {
+                result.push(Release.fromObject(element));
+            });
+            return result;
+        });
+    }
+    getRelease(version = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            return Release.fromId(null, this, version);
+        });
+    }
+    static fromObject(object) {
+        return new Resource(object.id, object.service, object.resourceId, Boolean(object.paid), object.name, Author.fromObject(object.author), object.downloads, object.ratings, object.rating, object.description);
+    }
+}
+class Release extends Suggestable {
+    constructor(service, id, version, creation, url, originalURL, fileName, fileExtension, fileSize, manifestName, manifestAuthors, manifestVersion, manifestMain, manifestVersionAPI, manifestDependencies, manifestOptionalDependencies) {
+        super();
+        this.service = service;
+        this.id = id;
+        this.version = version;
+        this.creation = creation;
+        this.url = url;
+        this.originalURL = originalURL;
+        this.fileName = fileName;
+        this.fileExtension = fileExtension;
+        this.fileSize = fileSize;
+        this.manifestName = manifestName;
+        this.manifestAuthors = manifestAuthors;
+        this.manifestVersion = manifestVersion;
+        this.manifestVersionAPI = manifestVersionAPI;
+        this.manifestDependencies = manifestDependencies;
+        this.manifestOptionalDependencies = manifestOptionalDependencies;
+    }
+    /**
+     * @description provide an id for fetching a known release, or provide a resource and a readable version name (or null for getting the latest version)
+     */
+    static fromId(id, resource = null, version = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let response = yield Grif.request("/resource/release/get/", {
+                release: id,
+                resource: resource != null ? resource.id : null,
+                version: version
+            });
+            return Release.fromObject(response);
+        });
+    }
+    download() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let response = yield Grif.request("/resource/release/download/", {
+                release: this.id,
+            });
+            return DownloadableRelease.fromObject(response);
+        });
+    }
+    static fromObject(object) {
+        return new Release(object.service, object.id, object.version, new Date(object.creation * 1000), object.url, object.originalURL, object.fileName, object.fileExtension, object.fileSize, object.manifestName, object.manifestAuthors, object.manifestVersion, object.manifestMain, object.manifestVersionAPI, object.manifestDependencies, object.manifestOptionalDependencies);
+    }
+}
+/// <reference path="./element/Resource.ts" />
+/// <reference path="./element/Release.ts" />
 class Grif {
     constructor(session = null) {
         Grif.session = session;
@@ -26,6 +149,22 @@ class Grif {
     }
     getSession() {
         return new Session(null, Grif.session, null, null, null, null, null);
+    }
+    queryResource(name, authorName = null, service = null) {
+        return __awaiter(this, void 0, void 0, function* () {
+            if (service != null)
+                service = service;
+            let response = yield Grif.request("/resource/query/", {
+                name: name,
+                author: authorName,
+                service: Number(service)
+            });
+            let result = [];
+            response.forEach(element => {
+                result.push(Resource.fromObject(element));
+            });
+            return result;
+        });
     }
     static login(save = true) {
         return __awaiter(this, void 0, void 0, function* () {
@@ -138,7 +277,11 @@ class Grif {
     }
 }
 try {
-    module.exports = Grif;
+    module.exports = {
+        default: Grif,
+        Resource: Resource,
+        Release: Release
+    };
 }
 catch (error) {
     // outside node context, native
@@ -149,12 +292,21 @@ class Account {
         this.username = username;
         this.githubId = githubId;
     }
+    /**
+     * @deprecated
+     */
     getId() {
         return this.id;
     }
+    /**
+     * @deprecated
+     */
     getUsername() {
         return this.username;
     }
+    /**
+     * @deprecated
+     */
     getGithubId() {
         return this.githubId;
     }
@@ -268,24 +420,45 @@ class Session {
     static fromObject(object) {
         return new Session(object.id, object.hash, object.userAgent, new Date(object.creation * 1000), object.expiry == null ? null : new Date(object.expiry * 1000), object.city, object.country);
     }
+    /**
+     * @deprecated
+     */
     getId() {
         return this.id;
     }
+    /**
+     * @deprecated
+     */
     getUserAgent() {
         return this.userAgent;
     }
+    /**
+     * @deprecated
+     */
     getCreation() {
         return this.creation;
     }
+    /**
+     * @deprecated
+     */
     getExpiry() {
         return this.expiry;
     }
+    /**
+     * @deprecated
+     */
     getCity() {
         return this.city;
     }
+    /**
+     * @deprecated
+     */
     getCountry() {
         return this.country;
     }
+    /**
+     * @deprecated
+     */
     getAccount() {
         return new Account(null, null, null);
     }
@@ -338,28 +511,106 @@ class Alert {
         this.text = text;
         this.commercial = commercial;
     }
+    /**
+     * @deprecated
+     */
     getId() {
         return this.id;
     }
+    /**
+     * @deprecated
+     */
     getCreation() {
         return this.creation;
     }
+    /**
+     * @deprecated
+     */
     getSeen() {
         return this.seen;
     }
+    /**
+     * @deprecated
+     */
     getAction() {
         return this.action;
     }
+    /**
+     * @deprecated
+     */
     getSubject() {
         return this.subject;
     }
+    /**
+     * @deprecated
+     */
     getText() {
         return this.text;
     }
+    /**
+     * @deprecated
+     */
     isCommercial() {
         return this.commercial;
     }
+    /**
+     * @deprecated
+     */
     static fromObject(object) {
         return new Alert(object.id, new Date(object.creation * 1000), object.seen == null ? null : new Date(object.seen * 1000), object.action, object.subject, object.text, object.commercial);
+    }
+}
+class Author {
+    constructor(service, id, username, authorId) {
+        this.service = service;
+        this.id = id;
+        this.username = username;
+        this.authorId = authorId;
+    }
+    static fromObject(object) {
+        return new Author(object.service, object.id, object.username, object.authorId);
+    }
+}
+class DownloadableRelease {
+    constructor(url, release, resource) {
+        this.url = url;
+        this.release = release;
+        this.resource = resource;
+    }
+    static fromObject(object) {
+        return new DownloadableRelease(object.url, Release.fromObject(object.release), object.resource != null ? Resource.fromObject(object.resource) : null);
+    }
+}
+var Service;
+(function (Service) {
+    Service[Service["Unknown"] = -1] = "Unknown";
+    Service[Service["SpigotMC"] = 0] = "SpigotMC";
+})(Service || (Service = {}));
+class UrlSuggestion {
+    constructor(id, suggestedBy, approvedBy, url, urlSchema, jsonURL, jsonPath, fileName, creation, uses) {
+        this.id = id;
+        this.suggestedBy = suggestedBy;
+        this.approvedBy = approvedBy;
+        this.url = url;
+        this.urlSchema = urlSchema;
+        this.jsonURL = jsonURL;
+        this.jsonPath = jsonPath;
+        this.fileName = fileName;
+        this.creation = creation;
+        this.uses = uses;
+    }
+    static fromObject(object) {
+        return new UrlSuggestion(object.id, Account.fromObject(object.suggestedBy), object.approvedBy != null ? Account.fromObject(object.approvedBy) : null, object.url, object.urlSchema, object.jsonURL, object.jsonPath, object.fileName, new Date(object.creation * 1000), object.uses);
+    }
+}
+class UrlSuggestionTestResult {
+    constructor(release, urlSuggestion, result, message) {
+        this.release = release;
+        this.urlSuggestion = urlSuggestion;
+        this.result = result;
+        this.message = message;
+    }
+    static fromObject(object) {
+        return new UrlSuggestionTestResult(Release.fromObject(object.release), object.urlSuggestion != null ? UrlSuggestion.fromObject(object.urlSuggestion) : null, Boolean(object.result), object.message);
     }
 }
