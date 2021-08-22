@@ -147,11 +147,9 @@ class Grif {
 
 }
 try {
-    module.exports = {
-        default: Grif,
-        Resource: Resource,
-        Release: Release
-    };
+    module.exports = Grif;
+    module.exports.resource = Resource;
+    module.exports.release = Release;
 } catch (error) {
     // outside node context, native
 }
