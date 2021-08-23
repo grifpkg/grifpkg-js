@@ -7,7 +7,11 @@ class Grif {
     constructor(session: string | null = null) {
         Grif.session = session;
         if (session == null) {
-            Grif.session = this.fromBrowser()
+            try {
+                Grif.session = this.fromBrowser()
+            } catch (error) {
+                // ignore, outside localstorage (probably node)
+            }
         }
     }
 
@@ -140,6 +144,7 @@ class Grif {
     }
 
     public fromBrowser(): string {
+        if (localStorage == null) throw new Error("outside localstorage context")
         let hash = localStorage.getItem(btoa("grifpkg"));
         if (hash == null) return null;
         return atob(hash);
@@ -148,8 +153,15 @@ class Grif {
 }
 try {
     module.exports = Grif;
-    module.exports.resource = Resource;
-    module.exports.release = Release;
+    module.exports.Resource = Resource;
+    module.exports.Release = Release;
+
+    try {
+        global.fetch = require("node-fetch");
+    } catch (error) {
+        // fetch define, ignore (require might not be present, outside node context)
+    }
+
 } catch (error) {
-    // outside node context, native
+    // outside node context or outside module import context, native
 }
