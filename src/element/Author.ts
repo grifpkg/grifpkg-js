@@ -15,6 +15,17 @@ class Author {
     public static fromObject(object: any): Author {
         return new Author(<Service>object.service, object.id, object.username, object.authorId);
     }
+    
+    public async getResources(): Promise<Resource[]> {
+        let resources: Resource[] = []
+        let response = await Grif.request("/resource/list/by/author/", {
+            author: this.id,
+        });
+        response.forEach(resourceData => {
+            resources.push(Resource.fromObject(resourceData))
+        });
+        return response
+    }
 
 
 }

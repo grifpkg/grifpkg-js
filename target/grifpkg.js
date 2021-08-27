@@ -90,6 +90,18 @@ class Resource extends Suggestable {
     static fromObject(object) {
         return new Resource(object.id, object.service, object.resourceId, Boolean(object.paid), object.name, Author.fromObject(object.author), object.downloads, object.ratings, object.rating, object.description);
     }
+    static getPopular(page = 0) {
+        return __awaiter(this, void 0, void 0, function* () {
+            let resources = [];
+            let response = yield Grif.request("/resource/list/by/popularity/", {
+                page: page,
+            });
+            response.forEach(resourceData => {
+                resources.push(Resource.fromObject(resourceData));
+            });
+            return response;
+        });
+    }
 }
 class Release extends Suggestable {
     constructor(service, id, version, creation, url, originalURL, fileName, fileExtension, fileSize, manifestName, manifestAuthors, manifestVersion, manifestMain, manifestVersionAPI, manifestDependencies, manifestOptionalDependencies) {
@@ -580,6 +592,18 @@ class Author {
     }
     static fromObject(object) {
         return new Author(object.service, object.id, object.username, object.authorId);
+    }
+    getResources() {
+        return __awaiter(this, void 0, void 0, function* () {
+            let resources = [];
+            let response = yield Grif.request("/resource/list/by/author/", {
+                author: this.id,
+            });
+            response.forEach(resourceData => {
+                resources.push(Resource.fromObject(resourceData));
+            });
+            return response;
+        });
     }
 }
 class DownloadableRelease {

@@ -52,4 +52,15 @@ class Resource extends Suggestable {
         return new Resource(object.id, <Service>object.service, object.resourceId, Boolean(object.paid), object.name, Author.fromObject(object.author), object.downloads, object.ratings, object.rating, object.description)
     }
 
+    public static async getPopular(page: number = 0): Promise<Resource[]> {
+        let resources: Resource[] = []
+        let response = await Grif.request("/resource/list/by/popularity/", {
+            page: page,
+        });
+        response.forEach(resourceData => {
+            resources.push(Resource.fromObject(resourceData))
+        });
+        return response
+    }
+
 }
